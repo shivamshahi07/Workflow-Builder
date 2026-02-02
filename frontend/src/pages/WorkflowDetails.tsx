@@ -126,7 +126,7 @@ function WorkflowDetails() {
 
   const fetchRunExecutions = async (runId: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/runs/${runId}`);
+      const response = await fetch(apiUrl(`/api/runs/${runId}`));
       const data = await response.json();
       setRunExecutions(data.node_executions || []);
     } catch (err) {

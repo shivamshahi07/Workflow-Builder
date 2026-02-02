@@ -15,7 +15,7 @@ function WorkflowList() {
   const navigate = useNavigate();
 
   const fetchWorkflows = () => {
-    fetch('http://localhost:8000/api/workflows')
+    fetch(apiUrl('/api/workflows'))
       .then(res => res.json())
       .then(data => {
         setWorkflows(data || []);
