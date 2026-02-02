@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { apiUrl } from '../api';
 import {
   ReactFlow,
   Controls,
@@ -113,7 +114,7 @@ function WorkflowDetails() {
 
   const fetchWorkflowDetails = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/workflows/${id}/details`);
+      const response = await fetch(apiUrl(`/api/workflows/${id}/details`));
       const data = await response.json();
       setDetails(data);
       setLoading(false);
@@ -186,7 +187,7 @@ function WorkflowDetails() {
       const inputData = triggerExecution?.input_data || {};
       
       // Run the workflow with the same inputs
-      const response = await fetch(`http://localhost:8000/api/workflows/${id}/run`, {
+      const response = await fetch(apiUrl(`/api/workflows/${id}/run`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(inputData),

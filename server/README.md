@@ -2,10 +2,10 @@
 
 ## Setup
 
-1. Create a virtual environment:
+1. Create a virtual environment (on Debian/Ubuntu: `sudo apt install python3-venv` if needed):
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 ```
 
 2. Install dependencies:

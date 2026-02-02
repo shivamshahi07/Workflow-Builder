@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { apiUrl } from '../api';
 
 function TestWorkflow() {
   const { id } = useParams<{ id: string }>();
@@ -26,7 +27,7 @@ function TestWorkflow() {
 
     try {
       // Start workflow run
-      const response = await fetch('http://localhost:8000/api/runs', {
+      const response = await fetch(apiUrl('/api/runs'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

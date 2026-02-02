@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { apiUrl } from '../api';
 
 interface Workflow {
   id: string;
@@ -32,7 +33,7 @@ function WorkflowList() {
 
   const createExampleWorkflow = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/workflows/example', {
+      const response = await fetch(apiUrl('/api/workflows/example'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

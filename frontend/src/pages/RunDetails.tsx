@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { apiUrl } from '../api';
 
 interface Run {
   id: string;
@@ -14,7 +15,7 @@ function RunDetails() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`http://localhost:8000/api/runs/${id}`)
+    fetch(apiUrl(`/api/runs/${id}`))
       .then(res => res.json())
       .then(data => {
         setRun(data);
