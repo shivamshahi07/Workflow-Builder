@@ -25,6 +25,7 @@ wheels/
 
 # FastAPI
 .env
+.env.prod
 *.db
 
 # Node

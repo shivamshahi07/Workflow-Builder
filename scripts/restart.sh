@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
-# Restart Workflow Builder API. Uses systemd if enabled, else stop + start in background.
+# Restart Workflow Builder. Prefers Docker (prod); else systemd; else run uvicorn in background.
 set -e
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+if [ -f "$ROOT/.env.prod" ] && docker compose -f "$ROOT/docker-compose.prod.yml" --env-file "$ROOT/.env.prod" config >/dev/null 2>&1; then
+	echo "Restarting app (Docker)..."
+	docker compose -f "$ROOT/docker-compose.prod.yml" --env-file "$ROOT/.env.prod" restart app
+	echo "Done. View logs: ./scripts/logs.sh"
+	exit 0
+fi
 
 if systemctl is-enabled workflow-backend 2>/dev/null; then
 	echo "Restarting backend (systemd)..."

@@ -1,5 +1,9 @@
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from contextlib import asynccontextmanager
 
 from app.api import workflows, runs, nodes, tasks
@@ -47,11 +51,30 @@ app.include_router(nodes.router, prefix="/api/nodes", tags=["nodes"])
 app.include_router(tasks.router, prefix="/api/tasks", tags=["tasks"])
 
 
-@app.get("/")
-async def root():
-    return {"message": "AI Workflow Automation Platform API"}
+# Static frontend (when running as single image with frontend build in server/static)
+_static_dir: Path = Path(__file__).resolve().parent / "static"
+if _static_dir.exists():
+    # React build: static/index.html, static/static/js/*, static/static/css/*
+    _assets: Path = _static_dir / "static"
+    if _assets.exists():
+        app.mount("/static", StaticFiles(directory=str(_assets)), name="assets")
 
+    @app.get("/")
+    async def root() -> FileResponse:
+        return FileResponse(_static_dir / "index.html")
 
-@app.get("/health")
-async def health():
-    return {"status": "healthy"}
+    @app.get("/health")
+    async def health() -> dict[str, str]:
+        return {"status": "healthy"}
+
+    @app.get("/{full_path:path}")
+    async def spa_fallback(full_path: str) -> FileResponse:
+        return FileResponse(_static_dir / "index.html")
+else:
+    @app.get("/")
+    async def root() -> dict[str, str]:
+        return {"message": "AI Workflow Automation Platform API"}
+
+    @app.get("/health")
+    async def health() -> dict[str, str]:
+        return {"status": "healthy"}

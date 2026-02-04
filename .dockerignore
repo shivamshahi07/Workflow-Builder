@@ -1,0 +1,41 @@
+# Git and IDE
+.git
+.gitignore
+.vscode
+.idea
+*.md
+!server/README.md
+
+# Frontend: only frontend/build is needed (build locally first)
+frontend/*
+!frontend/build
+
+# Backend venv and env
+server/.venv
+server/venv
+server/env
+server/.env
+server/.env.*
+*.db
+
+# Python
+__pycache__
+*.py[cod]
+*.pyo
+*.so
+.Python
+*.egg-info
+.eggs
+
+# Node (in case any at root)
+node_modules
+npm-debug.log*
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Nginx and scripts (VM-specific, not needed in image)
+nginx
+scripts
