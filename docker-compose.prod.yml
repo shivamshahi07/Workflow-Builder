@@ -5,6 +5,7 @@
 services:
   app:
     image: ${IMAGE:?Set IMAGE in .env.prod e.g. shivam567/workflow-app:latest}
+    platform: linux/amd64
     ports:
       - "127.0.0.1:8080:8080"
     environment:

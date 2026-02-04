@@ -1,5 +1,6 @@
 # Single image: backend + pre-built frontend (build frontend locally first, then docker build)
-# Build: (from repo root) cd frontend && npm run build && cd .. && docker build -t youruser/workflow-app .
+# Build for Linux VM (amd64): docker build --platform linux/amd64 -t youruser/workflow-app .
+# Build: (from repo root) cd frontend && npm run build && cd .. && docker build --platform linux/amd64 -t youruser/workflow-app .
 # Run: docker run -p 8080:8080 -e DATABASE_URL=... -e REDIS_URL=... youruser/workflow-app
 
 FROM python:3.12-slim
