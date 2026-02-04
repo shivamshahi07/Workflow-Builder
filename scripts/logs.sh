@@ -4,8 +4,12 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOGFILE="$ROOT/server/logs/backend.log"
 
 if [ -f "$ROOT/.env.prod" ]; then
-	if docker compose -f "$ROOT/docker-compose.prod.yml" --env-file "$ROOT/.env.prod" ps app 2>/dev/null | grep -q Up; then
-		exec docker compose -f "$ROOT/docker-compose.prod.yml" --env-file "$ROOT/.env.prod" logs -f app
+	DOCKER_CMD="docker compose -f $ROOT/docker-compose.prod.yml --env-file $ROOT/.env.prod"
+	if $DOCKER_CMD ps app 2>/dev/null | grep -q Up; then
+		exec $DOCKER_CMD logs -f app
+	fi
+	if sudo $DOCKER_CMD ps app 2>/dev/null | grep -q Up; then
+		exec sudo $DOCKER_CMD logs -f app
 	fi
 fi
 

@@ -27,7 +27,7 @@ function TestWorkflow() {
 
     try {
       // Start workflow run
-      const response = await fetch(apiUrl('/api/runs'), {
+      const response = await fetch(apiUrl('/api/runs/'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

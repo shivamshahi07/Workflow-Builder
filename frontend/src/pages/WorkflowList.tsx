@@ -15,7 +15,7 @@ function WorkflowList() {
   const navigate = useNavigate();
 
   const fetchWorkflows = () => {
-    fetch(apiUrl('/api/workflows'))
+    fetch(apiUrl('/api/workflows/'))
       .then(res => res.json())
       .then(data => {
         setWorkflows(data || []);
