@@ -24,6 +24,7 @@ import requests as req_lib
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.core.security import validate_url_for_ssrf
 from app.models.run import NodeExecution, NodeStatus, RunStatus, WorkflowRun
 from app.models.workflow import WorkflowVersion
 from app.services.ai_agent import AIAgent
@@ -337,6 +338,12 @@ class WorkflowExecutor:
             url = str(d.get("url", "")).strip()
             if not url:
                 return {"error": "HTTP node: 'url' is required"}
+
+            try:
+                validate_url_for_ssrf(url)
+            except ValueError as exc:
+                logger.warning("HTTP node blocked request to '%s': %s", url, exc)
+                return {"error": f"URL validation failed: {exc}"}
 
             raw_headers = d.get("headers", "{}")
             raw_body = d.get("body", "{}")

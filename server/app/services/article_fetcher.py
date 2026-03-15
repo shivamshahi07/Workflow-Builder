@@ -2,6 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 from typing import Dict, Any
 
+from app.core.security import validate_url_for_ssrf
+
 
 class ArticleFetcher:
     def __init__(self):
@@ -12,6 +14,7 @@ class ArticleFetcher:
     def fetch_article(self, url: str) -> Dict[str, Any]:
         """Fetch article content from URL"""
         try:
+            validate_url_for_ssrf(url)
             response = requests.get(url, headers=self.headers, timeout=10)
             response.raise_for_status()
             
@@ -58,6 +61,14 @@ class ArticleFetcher:
                 "url": url
             }
             
+        except ValueError as e:
+            return {
+                "success": False,
+                "error": f"URL validation failed: {str(e)}",
+                "title": url,
+                "content": "",
+                "url": url
+            }
         except requests.RequestException as e:
             return {
                 "success": False,
