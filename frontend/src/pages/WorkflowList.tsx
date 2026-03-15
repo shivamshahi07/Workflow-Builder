@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { apiUrl } from '../api';
 
 interface Workflow {
@@ -43,14 +44,17 @@ function WorkflowList() {
       const data = await response.json();
       
       if (data.workflow) {
-        alert(`Example workflow "${data.workflow.name}" created!`);
+        toast.success(`Workflow "${data.workflow.name}" created!`, {
+          description: 'Redirecting to test page…',
+        });
         fetchWorkflows();
-        // Navigate to test page
         navigate(`/test/${data.workflow.id}`);
       }
     } catch (err) {
       console.error('Failed to create example workflow:', err);
-      alert('Failed to create example workflow');
+      toast.error('Failed to create example workflow', {
+        description: 'Check the console for details.',
+      });
     }
   };
 

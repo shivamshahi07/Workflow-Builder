@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { apiUrl } from '../api';
 
 function TestWorkflow() {
@@ -50,7 +51,9 @@ function TestWorkflow() {
 
     } catch (err) {
       console.error('Failed to run workflow:', err);
-      alert('Failed to run workflow');
+      toast.error('Failed to run workflow', {
+        description: 'Please check your connection and try again.',
+      });
       setLoading(false);
     }
   };
