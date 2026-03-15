@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { Toaster } from 'sonner';
 import WorkflowList from './pages/WorkflowList';
 import WorkflowBuilder from './pages/WorkflowBuilder';
 import WorkflowDetails from './pages/WorkflowDetails';
@@ -49,6 +50,7 @@ function App() {
           </Routes>
         </main>
       </div>
+      <Toaster richColors position="top-right" closeButton />
     </Router>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { toast } from 'sonner';
 import { apiUrl } from '../api';
 import {
   ReactFlow,
@@ -55,7 +56,6 @@ function WorkflowDetails() {
   const [highlightedNode, setHighlightedNode] = useState<string | null>(null);
   const [showOutput, setShowOutput] = useState(false);
   const [outputData, setOutputData] = useState<any>(null);
-  const [showCopyToast, setShowCopyToast] = useState(false);
   const [isRerunning, setIsRerunning] = useState(false);
 
   useEffect(() => {
@@ -172,8 +172,7 @@ function WorkflowDetails() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
-      setShowCopyToast(true);
-      setTimeout(() => setShowCopyToast(false), 3000);
+      toast.success('Copied to clipboard!');
     });
   };
 
@@ -577,15 +576,6 @@ function WorkflowDetails() {
         </div>
       </div>
 
-      {/* Copy Toast Notification */}
-      {showCopyToast && (
-        <div className="fixed bottom-8 right-8 z-50 animate-slide-up">
-          <div className="bg-green-600 text-white px-6 py-3 rounded-lg shadow-2xl flex items-center gap-3">
-            <span className="text-2xl">✓</span>
-            <span className="font-medium">Copied to clipboard!</span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
