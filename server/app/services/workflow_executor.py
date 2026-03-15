@@ -547,7 +547,7 @@ class WorkflowExecutor:
 
         # ── output (collector) ────────────────────────────────────────────
         elif node_type == "output":
-            return {"trigger_data": trigger_data, "previous_results": previous_results}
+            return {"trigger_data": trigger_data, "previous_results": results}
 
         # ── unknown ───────────────────────────────────────────────────────
         else:
