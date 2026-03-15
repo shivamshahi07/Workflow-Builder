@@ -177,6 +177,14 @@ class WorkflowExecutor:
             for node in ordered_nodes:
                 nid = node["id"]
 
+                # Skip if this node was explicitly marked skipped (e.g. non-matching
+                # branch of a condition node) — must be checked before the parent
+                # check, since the condition node itself was executed (not skipped).
+                if nid in skipped:
+                    logger.info(f"Skipping node {nid} (explicitly skipped)")
+                    self._record_skipped(run_id, node)
+                    continue
+
                 # Skip if every parent was skipped
                 node_parents = parents.get(nid, set())
                 if node_parents and all(p in skipped for p in node_parents):
