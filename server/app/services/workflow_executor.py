@@ -64,6 +64,32 @@ def resolve_value(value: str, trigger_data: dict, results: dict) -> str:
     return re.sub(r"\{\{([^}]+)\}\}", replacer, value)
 
 
+def resolve_ref(value: str, trigger_data: dict, results: dict) -> Any:
+    """Resolve a template reference, preserving the native type of the value.
+
+    When the entire string is a single {{path}} token, the raw resolved value
+    (list, dict, etc.) is returned without stringification.  For strings that
+    contain multiple tokens or surrounding text, falls back to resolve_value.
+    """
+    if not isinstance(value, str):
+        return value
+
+    m = re.fullmatch(r"\{\{([^}]+)\}\}", value.strip())
+    if m:
+        path = m.group(1).strip().split(".")
+        if not path:
+            return value
+        if path[0] == "trigger":
+            val = _get_nested(trigger_data, path[1:])
+        elif path[0] in results:
+            val = _get_nested(results[path[0]], path[1:])
+        else:
+            return value
+        return val  # Return raw value — may be list, dict, int, etc.
+
+    return resolve_value(value, trigger_data, results)
+
+
 def resolve_data(data: Any, trigger_data: dict, results: dict) -> Any:
     """Recursively resolve template variables in any data structure."""
     if isinstance(data, str):
@@ -484,7 +510,7 @@ class WorkflowExecutor:
             operator = data.get("operator", "exists")
             value = resolve_value(data.get("value", ""), trigger_data, results)
 
-            items_raw = resolve_value(f"{{{{{items_path}}}}}", trigger_data, results) if items_path else []
+            items_raw = resolve_ref(f"{{{{{items_path}}}}}", trigger_data, results) if items_path else []
             items = items_raw if isinstance(items_raw, list) else []
 
             filtered = []
@@ -511,7 +537,7 @@ class WorkflowExecutor:
         # ── loop (pass-through, logs items) ──────────────────────────────
         elif node_type == "loop":
             items_path = data.get("items_path", "")
-            items_raw = resolve_value(f"{{{{{items_path}}}}}", trigger_data, results) if items_path else []
+            items_raw = resolve_ref(f"{{{{{items_path}}}}}", trigger_data, results) if items_path else []
             items = items_raw if isinstance(items_raw, list) else []
             return {"items": items, "count": len(items)}
 
