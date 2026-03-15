@@ -145,61 +145,18 @@ async def get_workflow_versions(workflow_id: str, db: Session = Depends(get_db))
     ]
 
 
-@router.post("/example")
-async def create_example_workflow(db: Session = Depends(get_db)):
-    """Create an example article summarizer workflow"""
-    
-    # Create workflow
+def _create_workflow_with_definition(db: Session, name: str, description: str, definition: dict):
+    """Helper: create a Workflow + published WorkflowVersion and return both."""
     workflow = Workflow(
         id=str(uuid.uuid4()),
-        name="Article Summarizer",
-        description="Summarize multiple articles using AI",
+        name=name,
+        description=description,
         created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow()
+        updated_at=datetime.utcnow(),
     )
     db.add(workflow)
     db.commit()
-    
-    # Create workflow definition
-    definition = {
-        "nodes": [
-            {
-                "id": "trigger-1",
-                "type": "trigger",
-                "data": {"label": "Trigger: Articles Input"},
-                "position": {"x": 100, "y": 100}
-            },
-            {
-                "id": "ai-agent-1",
-                "type": "aiAgent",
-                "data": {
-                    "label": "AI Agent: Summarize Articles",
-                    "agentType": "summarize_multiple"
-                },
-                "position": {"x": 400, "y": 100}
-            },
-            {
-                "id": "output-1",
-                "type": "output",
-                "data": {"label": "Output: Summaries"},
-                "position": {"x": 700, "y": 100}
-            }
-        ],
-        "edges": [
-            {
-                "id": "e1-2",
-                "source": "trigger-1",
-                "target": "ai-agent-1"
-            },
-            {
-                "id": "e2-3",
-                "source": "ai-agent-1",
-                "target": "output-1"
-            }
-        ]
-    }
-    
-    # Create version
+
     version = WorkflowVersion(
         id=str(uuid.uuid4()),
         workflow_id=workflow.id,
@@ -207,20 +164,187 @@ async def create_example_workflow(db: Session = Depends(get_db)):
         definition=definition,
         is_published=True,
         published_at=datetime.utcnow(),
-        created_at=datetime.utcnow()
+        created_at=datetime.utcnow(),
     )
     db.add(version)
     db.commit()
-    
-    return {
-        "workflow": {
-            "id": workflow.id,
-            "name": workflow.name,
-            "description": workflow.description
+    return workflow, version
+
+
+@router.post("/example")
+async def create_example_workflow(db: Session = Depends(get_db)):
+    """Article Summarizer — fetch URLs and summarize with AI."""
+    definition = {
+        "nodes": [
+            {
+                "id": "trigger-1",
+                "type": "trigger",
+                "data": {"label": "Articles Input"},
+                "position": {"x": 100, "y": 160},
+            },
+            {
+                "id": "ai-agent-1",
+                "type": "aiAgent",
+                "data": {"label": "Summarize Articles", "agentType": "summarize_multiple"},
+                "position": {"x": 400, "y": 160},
+            },
+            {
+                "id": "output-1",
+                "type": "output",
+                "data": {"label": "Summaries Output"},
+                "position": {"x": 700, "y": 160},
+            },
+        ],
+        "edges": [
+            {"id": "e1", "source": "trigger-1", "target": "ai-agent-1"},
+            {"id": "e2", "source": "ai-agent-1", "target": "output-1"},
+        ],
+        "input_schema": {
+            "article_urls": ["https://en.wikipedia.org/wiki/Artificial_intelligence"]
         },
-        "version": {
-            "id": version.id,
-            "version": version.version,
-            "definition": definition
-        }
+    }
+    workflow, version = _create_workflow_with_definition(
+        db, "Article Summarizer", "Fetch web articles and summarize them with AI", definition
+    )
+    return {
+        "workflow": {"id": workflow.id, "name": workflow.name, "description": workflow.description},
+        "version": {"id": version.id, "version": version.version, "definition": definition},
+    }
+
+
+@router.post("/example/email-reply")
+async def create_email_reply_workflow(db: Session = Depends(get_db)):
+    """
+    Email Reply Drafter — AI drafts a professional reply and sends it via Gmail.
+    Input: email_from, customer_name, subject, original_body, tone
+    """
+    definition = {
+        "nodes": [
+            {
+                "id": "trigger-1",
+                "type": "trigger",
+                "data": {"label": "Email Input"},
+                "position": {"x": 80, "y": 160},
+            },
+            {
+                "id": "ai-draft-1",
+                "type": "aiAgent",
+                "data": {
+                    "label": "Draft Reply",
+                    "agentType": "draft_email_reply",
+                },
+                "position": {"x": 340, "y": 160},
+            },
+            {
+                "id": "email-1",
+                "type": "email",
+                "data": {
+                    "label": "Send Reply",
+                    "to": "{{trigger.email_from}}",
+                    "subject": "{{ai-draft-1.subject_line}}",
+                    "body": "{{ai-draft-1.reply}}",
+                },
+                "position": {"x": 600, "y": 160},
+            },
+            {
+                "id": "output-1",
+                "type": "output",
+                "data": {"label": "Done"},
+                "position": {"x": 860, "y": 160},
+            },
+        ],
+        "edges": [
+            {"id": "e1", "source": "trigger-1", "target": "ai-draft-1"},
+            {"id": "e2", "source": "ai-draft-1", "target": "email-1"},
+            {"id": "e3", "source": "email-1", "target": "output-1"},
+        ],
+        "input_schema": {
+            "email_from": "customer@example.com",
+            "customer_name": "Jane Doe",
+            "subject": "Question about my order",
+            "original_body": "Hi, I placed an order last week but haven't received a confirmation. Can you help?",
+            "tone": "professional",
+        },
+    }
+    workflow, version = _create_workflow_with_definition(
+        db,
+        "Email Reply Drafter",
+        "AI drafts a professional reply to a customer email and sends it via Gmail",
+        definition,
+    )
+    return {
+        "workflow": {"id": workflow.id, "name": workflow.name, "description": workflow.description},
+        "version": {"id": version.id, "version": version.version, "definition": definition},
+    }
+
+
+@router.post("/example/finance-digest")
+async def create_finance_digest_workflow(db: Session = Depends(get_db)):
+    """
+    Finance News Digest — fetch articles → AI summarizes → AI analyses as finance expert
+    → emails the report.
+    Input: article_urls, email_to, report_title
+    """
+    definition = {
+        "nodes": [
+            {
+                "id": "trigger-1",
+                "type": "trigger",
+                "data": {"label": "News Input"},
+                "position": {"x": 80, "y": 180},
+            },
+            {
+                "id": "ai-summary-1",
+                "type": "aiAgent",
+                "data": {"label": "Summarize Articles", "agentType": "summarize_multiple"},
+                "position": {"x": 320, "y": 180},
+            },
+            {
+                "id": "ai-finance-1",
+                "type": "aiAgent",
+                "data": {"label": "Finance Analysis", "agentType": "analyze_finance"},
+                "position": {"x": 560, "y": 180},
+            },
+            {
+                "id": "email-1",
+                "type": "email",
+                "data": {
+                    "label": "Email Digest",
+                    "to": "{{trigger.email_to}}",
+                    "subject": "{{trigger.report_title}}",
+                    "body": "{{ai-finance-1.report}}",
+                },
+                "position": {"x": 800, "y": 180},
+            },
+            {
+                "id": "output-1",
+                "type": "output",
+                "data": {"label": "Done"},
+                "position": {"x": 1040, "y": 180},
+            },
+        ],
+        "edges": [
+            {"id": "e1", "source": "trigger-1", "target": "ai-summary-1"},
+            {"id": "e2", "source": "ai-summary-1", "target": "ai-finance-1"},
+            {"id": "e3", "source": "ai-finance-1", "target": "email-1"},
+            {"id": "e4", "source": "email-1", "target": "output-1"},
+        ],
+        "input_schema": {
+            "article_urls": [
+                "https://www.reuters.com/markets/",
+                "https://finance.yahoo.com/news/"
+            ],
+            "email_to": "you@example.com",
+            "report_title": "Daily Finance Digest",
+        },
+    }
+    workflow, version = _create_workflow_with_definition(
+        db,
+        "Finance News Digest",
+        "Fetches finance news, summarizes with AI, performs expert analysis, and emails the report",
+        definition,
+    )
+    return {
+        "workflow": {"id": workflow.id, "name": workflow.name, "description": workflow.description},
+        "version": {"id": version.id, "version": version.version, "definition": definition},
     }
